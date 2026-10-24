@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Google Ads Optimizer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <div id="globalLoader" class="global-loader" hidden aria-live="polite" aria-busy="false">
+    <div class="global-loader-track" aria-hidden="true"><div class="global-loader-bar"></div></div>
+    <div class="global-loader-pill">
+      <span class="loader-spinner" aria-hidden="true"></span>
+      <span id="globalLoaderText">Loading data…</span>
+    </div>
+  </div>
+  <div class="app">
+    <aside class="rail" aria-label="Navigation">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <span class="g g-b"></span><span class="g g-r"></span><span class="g g-y"></span><span class="g g-g"></span>
+        </div>
+        <div>
+          <div class="brand-title">Ads Optimizer</div>
+          <div class="brand-sub" id="modeBadge">loading…</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <button class="nav-item active" data-view="chat"><span class="material-symbols-outlined">smart_toy</span>AI Assistant</button>
+        <button class="nav-item" data-view="overview"><span class="material-symbols-outlined">dashboard</span>Overview</button>
+        <button class="nav-item" data-view="campaigns"><span class="material-symbols-outlined">campaign</span>Campaigns</button>
+        <button class="nav-item" data-view="wizard"><span class="material-symbols-outlined">add_circle</span>New campaign</button>
+        <button class="nav-item" data-view="keywords"><span class="material-symbols-outlined">key</span>Keywords</button>
+        <button class="nav-item" data-view="searchterms"><span class="material-symbols-outlined">travel_explore</span>Search terms</button>
+        <button class="nav-item" data-view="ads"><span class="material-symbols-outlined">ads_click</span>Ads</button>
+        <button class="nav-item" data-view="creatives"><span class="material-symbols-outlined">edit_note</span>Creatives</button>
+        <button class="nav-item" data-view="recommendations"><span class="material-symbols-outlined">auto_fix</span>Optimize</button>
+        <button class="nav-item" data-view="analytics"><span class="material-symbols-outlined">monitoring</span>Analytics</button>
+        <button class="nav-item" data-view="gaql"><span class="material-symbols-outlined">terminal</span>GAQL</button>
+        <button class="nav-item" data-view="playbook"><span class="material-symbols-outlined">menu_book</span>Playbook</button>
+        <button class="nav-item" data-view="setup"><span class="material-symbols-outlined">settings</span>Setup</button>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1 id="pageTitle">AI Assistant</h1>
+          <p class="muted" id="accountLine">Account —</p>
+        </div>
+        <div class="top-actions">
+          <label class="field">
+            <span>Account</span>
+            <select id="accountSelect" title="Switch Google Ads account">
+              <option value="">—</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Period</span>
+            <select id="daysSelect">
+              <option value="7">Last 7 days</option>
+              <option value="14">Last 14 days</option>
+              <option value="30" selected>Last 30 days</option>
+            </select>
+          </label>
+          <button class="btn btn-primary" id="refreshBtn">
+            <span class="material-symbols-outlined" id="refreshIcon">refresh</span>
+            <span id="refreshLabel">Refresh</span>
+          </button>
+        </div>
+      </header>
+
+      <section id="view-chat" class="view active">
+        <div class="chat-layout">
+          <aside class="chat-sidebar panel" aria-label="Saved conversations">
+            <div class="chat-sidebar-head">
+              <strong>Conversations</strong>
+              <button type="button" class="btn btn-ghost" id="newChatBtn" title="New conversation">
+                <span class="material-symbols-outlined">add</span>
+                New
+              </button>
+            </div>
+            <div class="chat-list" id="chatList"></div>
+          </aside>
+          <div class="chat-shell panel">
+            <div class="chat-status" id="chatStatus">Загрузка моделей OpenRouter…</div>
+            <div class="chat-prompts">
+              <button type="button" class="prompt-chip" data-prompt="Сделай обзор аккаунта за 30 дней и топ-3 проблемы">Обзор аккаунта</button>
+              <button type="button" class="prompt-chip" data-prompt="Покажи рекомендации по оптимизации и что применить первым">Оптимизация</button>
+              <button type="button" class="prompt-chip" data-prompt="Подбери ключевые слова через DataForSEO по тематике аккаунта (PL)">DataForSEO keys</button>
+              <button type="button" class="prompt-chip" data-prompt="Подбери ключевые слова через Keyword Planner по тематике аккаунта (PL)">Keyword Planner</button>
+              <button type="button" class="prompt-chip" data-prompt="Найди ключи и search terms со сливом бюджета">Слив бюджета</button>
+              <button type="button" class="prompt-chip" data-prompt="Подготовь preview новой Search-кампании с нуля (бюджет, ключи, RSA) и спроси подтверждение">Создать кампанию</button>
+              <button type="button" class="prompt-chip" data-prompt="Give me the account launch playbook checklist and what to check first">Playbook</button>
+              <button type="button" class="prompt-chip" data-prompt="Покажи цели конверсий аккаунта и какие из них primary">Цели конверсий</button>
+              <button type="button" class="prompt-chip" data-prompt="Покажи статистику Google Analytics за 30 дней: каналы, лендинги, конверсии">GA4 статистика</button>
+            </div>
+            <div class="chat-log" id="chatLog" aria-live="polite"></div>
+            <form class="chat-composer" id="chatForm">
+              <div class="composer-box">
+                <div class="composer-attach-preview" id="chatAttachPreview" hidden></div>
+                <textarea id="chatInput" rows="2" placeholder="Write a message..."></textarea>
+                <div class="composer-toolbar">
+                  <div class="composer-toolbar-left">
+                    <input
+                      type="file"
+                      id="chatFileInput"
+                      class="sr-only"
+                      multiple
+                      accept="image/jpeg,image/png,image/gif,image/webp,.txt,.md,.csv,.json,.log,.tsv"
+                    />
+                    <button
+                      class="composer-icon-btn"
+                      type="button"
+                      id="chatAttachBtn"
+                      title="Attach image or file"
+                      aria-label="Attach image or file"
+                    >
+                      <span class="material-symbols-outlined">add</span>
+                    </button>
+                  </div>
+                  <div class="composer-toolbar-right">
+                    <label class="composer-model" title="Model">
+                      <select id="modelSelect" data-model-select aria-label="Model"></select>
+                      <span class="material-symbols-outlined composer-model-chevron" aria-hidden="true">expand_more</span>
+                    </label>
+                    <button
+                      class="composer-icon-btn"
+                      type="button"
+                      id="voiceBtn"
+                      data-voice-btn
+                      data-voice-input="chatInput"
+                      title="Voice input"
+                      aria-label="Voice input"
+                      aria-pressed="false"
+                    >
+                      <span class="material-symbols-outlined" id="voiceIcon" data-voice-icon>mic</span>
+                    </button>
+                    <button class="composer-send-btn" type="submit" id="chatSend" title="Send" aria-label="Send">
+                      <span class="material-symbols-outlined">arrow_upward</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-overview" class="view">
+        <div class="kpi-grid" id="kpiGrid"></div>
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Performance trend</h2>
+            <span class="chip">Cost & conversions</span>
+          </div>
+          <canvas id="trendChart" height="110"></canvas>
+        </div>
+        <div class="split">
+          <div class="panel">
+            <div class="panel-head"><h2>Top campaigns</h2></div>
+            <div class="table-wrap" id="overviewCampaigns"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>Priority actions</h2></div>
+            <div id="overviewRecs" class="rec-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-campaigns" class="view">
+        <div class="panel">
+          <div class="table-toolbar">
+            <div class="toolbar-left">
+              <button type="button" class="btn btn-primary" id="openWizardBtn">
+                <span class="material-symbols-outlined">add</span> New Search campaign
+              </button>
+            </div>
+            <p class="muted">Pause, budget, and bidding from the Actions column. New campaigns start PAUSED.</p>
+          </div>
+          <div class="table-wrap" id="campaignsTable"></div>
+        </div>
+      </section>
+      <section id="view-keywords" class="view">
+        <div class="panel">
+          <div class="table-toolbar" id="keywordsToolbar">
+            <div class="toolbar-left">
+              <label class="field compact">
+                Campaign
+                <select id="kwCampaignFilter"><option value="">All campaigns</option></select>
+              </label>
+              <label class="field compact">
+                Ad group
+                <select id="kwAdGroupFilter"><option value="">All ad groups</option></select>
+              </label>
+              <label class="field compact">
+                Sort
+                <select id="kwSort">
+                  <option value="campaign_asc">Campaign A–Z</option>
+                  <option value="cost_desc">Cost ↓</option>
+                  <option value="conversions_desc">Conv. ↓</option>
+                  <option value="cpa_asc">CPA ↑</option>
+                  <option value="ctr_desc">CTR ↓</option>
+                  <option value="text_asc">Keyword A–Z</option>
+                </select>
+              </label>
+              <label class="field compact grow">
+                Search
+                <input id="kwSearch" type="search" placeholder="Keyword or ad group…" />
+              </label>
+            </div>
+            <div class="toolbar-right">
+              <span class="count-chip" id="kwCount">0 keywords</span>
+            </div>
+          </div>
+          <p class="panel-note" id="kwNote">
+            Полный список ключей из групп объявлений аккаунта. Метрики — за выбранный период (в т.ч. с нулевым трафиком).
+            Это не search terms. В RSA ключи не «вшиты» в объявление — объявление использует все ключи своей ad group.
+          </p>
+          <div class="table-wrap" id="keywordsTable"></div>
+        </div>
+      </section>
+      <section id="view-searchterms" class="view">
+        <div class="panel">
+          <div class="table-toolbar" id="stToolbar">
+            <div class="toolbar-left">
+              <label class="field compact">
+                Campaign
+                <select id="stCampaignFilter"><option value="">All campaigns</option></select>
+              </label>
+              <label class="field compact">
+                Sort
+                <select id="stSort">
+                  <option value="cost_desc">Cost ↓</option>
+                  <option value="clicks_desc">Clicks ↓</option>
+                  <option value="conversions_desc">Conv. ↓</option>
+                  <option value="cpa_asc">CPA ↑</option>
+                  <option value="campaign_asc">Campaign A–Z</option>
+                  <option value="search_term_asc">Term A–Z</option>
+                </select>
+              </label>
+              <label class="field compact grow">
+                Search
+                <input id="stSearch" type="search" placeholder="Search term or campaign…" />
+              </label>
+            </div>
+            <div class="toolbar-right">
+              <span class="count-chip" id="stCount">0 terms</span>
+            </div>
+          </div>
+          <p class="panel-note">Queries that triggered ads. Add as campaign negative (EXACT) in one click.</p>
+          <div class="table-wrap" id="searchTermsTable"></div>
+        </div>
+      </section>
+      <section id="view-wizard" class="view">
+        <div class="panel wizard-panel">
+          <h2>Create Search campaign</h2>
+          <p class="muted">Campaign starts PAUSED. Landing URL is checked (HTTP 200) before Google Ads mutate. RSA follows rsa-ad-strength (15 H / 4 D + diversity).</p>
+          <form id="wizardForm" class="wizard-form">
+            <div class="wizard-grid">
+              <label>Campaign name<input name="campaign_name" required placeholder="Search | PL | …" /></label>
+              <label>Daily budget<input name="daily_budget" type="number" min="1" step="1" value="50" required /></label>
+              <label>Bidding
+                <select name="bidding">
+                  <option value="maximize_clicks">Maximize clicks</option>
+                  <option value="maximize_conversions">Maximize conversions</option>
+                  <option value="target_cpa">Target CPA</option>
+                  <option value="manual_cpc">Manual CPC</option>
+                </select>
+              </label>
+              <label>Ad group name<input name="ad_group_name" required placeholder="Route / theme" /></label>
+              <label class="wide">Final URL<input name="final_url" type="url" required placeholder="https://…" /></label>
+              <label>CPC bid (manual)<input name="cpc_bid" type="number" min="0.1" step="0.1" value="1" /></label>
+              <label>Target CPA<input name="target_cpa" type="number" min="0" step="0.1" placeholder="if Target CPA" /></label>
+            </div>
+            <label class="wide">Keywords (one per line, optional match: phrase text)
+              <textarea name="keywords" rows="4" placeholder="transfer gdansk&#10;exact prywatny transfer"></textarea>
+            </label>
+            <label class="wide">Headlines (one per line, 3–15, ≤30 chars)
+              <textarea name="headlines" rows="8" required></textarea>
+            </label>
+            <label class="wide">Descriptions (one per line, 2–4, ≤90 chars)
+              <textarea name="descriptions" rows="4" required></textarea>
+            </label>
+            <label class="wide">Sitelinks optional (link_text | url | desc1 | desc2)
+              <textarea name="sitelinks" rows="4" placeholder="Book now | https://…/book | Fixed price | Instant confirm"></textarea>
+            </label>
+            <div class="wizard-actions">
+              <button type="button" class="btn btn-ghost" id="wizardPreviewBtn">Preview</button>
+              <button type="submit" class="btn btn-primary">Create (paused)</button>
+              <span class="modal-status" id="wizardStatus"></span>
+            </div>
+            <pre class="wizard-preview" id="wizardPreview" hidden></pre>
+          </form>
+        </div>
+      </section>
+      <section id="view-ads" class="view">
+        <div class="panel">
+          <div class="table-toolbar" id="adsToolbar">
+            <div class="toolbar-left">
+              <label class="field compact">
+                Campaign
+                <select id="adCampaignFilter"><option value="">All campaigns</option></select>
+              </label>
+              <label class="field compact">
+                Status
+                <select id="adStatusFilter">
+                  <option value="">All statuses</option>
+                  <option value="ENABLED">Enabled</option>
+                  <option value="PAUSED">Paused</option>
+                </select>
+              </label>
+              <label class="field compact">
+                Sort
+                <select id="adSort">
+                  <option value="campaign_asc">Campaign A–Z</option>
+                  <option value="cost_desc">Cost ↓</option>
+                  <option value="conversions_desc">Conv. ↓</option>
+                  <option value="ctr_desc">CTR ↓</option>
+                  <option value="roas_desc">ROAS ↓</option>
+                  <option value="name_asc">Name A–Z</option>
+                </select>
+              </label>
+              <label class="field compact grow">
+                Search
+                <input id="adSearch" type="search" placeholder="Ad or campaign…" />
+              </label>
+            </div>
+            <div class="toolbar-right">
+              <span class="count-chip" id="adCount">0 ads</span>
+            </div>
+          </div>
+          <div class="table-wrap" id="adsTable"></div>
+        </div>
+      </section>
+      <section id="view-creatives" class="view">
+        <div class="panel">
+          <div class="table-toolbar" id="creativesToolbar">
+            <div class="toolbar-left">
+              <label class="field compact">
+                Campaign
+                <select id="crCampaignFilter"><option value="">All campaigns</option></select>
+              </label>
+              <label class="field compact">
+                Status
+                <select id="crStatusFilter">
+                  <option value="">All statuses</option>
+                  <option value="ENABLED">Enabled</option>
+                  <option value="PAUSED">Paused</option>
+                </select>
+              </label>
+              <label class="field compact">
+                Ad strength
+                <select id="crStrengthFilter">
+                  <option value="">All strengths</option>
+                  <option value="POOR,INCOMPLETE,AVERAGE">Needs fix (Poor/Avg)</option>
+                  <option value="POOR">Poor</option>
+                  <option value="INCOMPLETE">Incomplete</option>
+                  <option value="AVERAGE">Average</option>
+                  <option value="GOOD">Good</option>
+                  <option value="EXCELLENT">Excellent</option>
+                </select>
+              </label>
+              <label class="field compact">
+                Sort
+                <select id="crSort">
+                  <option value="ad_strength_asc">Ad strength (worst first)</option>
+                  <option value="campaign_asc">Campaign A–Z</option>
+                  <option value="ad_group_asc">Ad group A–Z</option>
+                  <option value="name_asc">Name A–Z</option>
+                  <option value="status_asc">Status</option>
+                </select>
+              </label>
+              <label class="field compact grow">
+                Search
+                <input id="crSearch" type="search" placeholder="Headline, URL, campaign…" />
+              </label>
+            </div>
+            <div class="toolbar-right">
+              <span class="count-chip" id="crCount">0 creatives</span>
+              <button type="button" class="btn btn-ghost" id="crReloadBtn" title="Reload from Google Ads">
+                <span class="material-symbols-outlined">refresh</span>
+                Reload
+              </button>
+            </div>
+          </div>
+          <p class="muted" id="crFetchNote" style="margin:0 0 10px;font-size:12px"></p>
+          <div class="creative-grid" id="creativesGrid"></div>
+        </div>
+      </section>
+
+      <div class="modal-backdrop" id="rsaEditorModal" hidden>
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="rsaEditorTitle">
+          <div class="modal-head">
+            <div>
+              <h2 id="rsaEditorTitle">Edit RSA</h2>
+              <p class="modal-sub" id="rsaEditorSub">—</p>
+            </div>
+            <button type="button" class="btn btn-ghost" id="rsaEditorClose" title="Close" aria-label="Close">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          <div class="modal-preview-box" id="rsaEditorLivePreview"></div>
+          <div id="rsaChecklist" class="rsa-checklist" hidden></div>
+          <div class="rsa-paths">
+            <label>Final URL<input id="rsaEditFinalUrl" type="url" placeholder="https://…" /><span class="url-check" id="rsaUrlCheck"></span></label>
+            <label>Path 1<input id="rsaEditPath1" maxlength="15" placeholder="path1" /></label>
+            <label>Path 2<input id="rsaEditPath2" maxlength="15" placeholder="path2" /></label>
+          </div>
+          <div class="rsa-editor-grid">
+            <div class="rsa-editor-col">
+              <h3>Headlines <span class="muted" id="rsaHCount">(0/15)</span> · ≤30</h3>
+              <div class="rsa-lines" id="rsaHeadlineLines"></div>
+              <button type="button" class="btn btn-ghost" id="rsaAddHeadline">
+                <span class="material-symbols-outlined">add</span> Headline
+              </button>
+            </div>
+            <div class="rsa-editor-col">
+              <h3>Descriptions <span class="muted" id="rsaDCount">(0/4)</span> · ≤90</h3>
+              <div class="rsa-lines" id="rsaDescriptionLines"></div>
+              <button type="button" class="btn btn-ghost" id="rsaAddDescription">
+                <span class="material-symbols-outlined">add</span> Description
+              </button>
+            </div>
+          </div>
+          <div class="rsa-sitelinks-editor">
+            <div class="rsa-sitelinks-head">
+              <h3>Sitelinks <span class="muted" id="rsaSlCount">(0)</span> · campaign-level · link ≤25</h3>
+              <button type="button" class="btn btn-ghost" id="rsaAddSitelink">
+                <span class="material-symbols-outlined">add</span> Sitelink
+              </button>
+            </div>
+            <div class="rsa-sitelink-rows" id="rsaSitelinkRows"></div>
+          </div>
+          <div class="modal-foot">
+            <span class="modal-status" id="rsaEditorStatus"></span>
+            <button type="button" class="btn btn-ghost" id="rsaEditorCancel">Cancel</button>
+            <button type="button" class="btn btn-primary" id="rsaEditorApply">
+              <span class="material-symbols-outlined">cloud_upload</span>
+              Apply to Google Ads
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-backdrop" id="confirmModal" hidden>
+        <div class="modal-card confirm-card" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+          <div class="modal-head">
+            <div>
+              <h2 id="confirmModalTitle">Confirm mutation</h2>
+              <p class="modal-sub" id="confirmModalSub">Review the preview, then apply to Google Ads.</p>
+            </div>
+            <button type="button" class="btn btn-ghost" id="confirmModalClose" title="Close" aria-label="Close">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          <pre class="wizard-preview" id="confirmModalPreview"></pre>
+          <div class="modal-foot">
+            <span class="modal-status" id="confirmModalStatus"></span>
+            <button type="button" class="btn btn-ghost" id="confirmModalCancel">Cancel</button>
+            <button type="button" class="btn btn-primary" id="confirmModalApply">
+              <span class="material-symbols-outlined">check</span>
+              Apply
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <section id="view-recommendations" class="view">
+        <div class="panel optimize-panel">
+          <div class="opt-banner">
+            <div class="opt-banner-title">Optimize — live account audit</div>
+            <p class="opt-banner-text">
+              Recommendations are generated from real Google Ads metrics (lookback period).
+              Applicable actions mutate the account via API after confirmation.
+              Review / RSA items open AI Assistant with a ready prompt.
+            </p>
+          </div>
+          <div class="opt-toolbar">
+            <p class="panel-note" id="optNote">Open this tab to run the audit.</p>
+            <div class="opt-toolbar-actions">
+              <label class="field compact">
+                Filter
+                <select id="optFilter">
+                  <option value="all">All</option>
+                  <option value="applicable">Applicable only</option>
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                </select>
+              </label>
+              <button type="button" class="btn btn-primary" id="optReloadBtn">
+                <span class="material-symbols-outlined">refresh</span>
+                Re-audit
+              </button>
+            </div>
+          </div>
+          <div class="kpi-grid" id="optKpis"></div>
+          <div class="opt-list" id="recsFull"></div>
+        </div>
+      </section>
+      <section id="view-analytics" class="view">
+        <div class="panel analytics-panel">
+          <div class="ga-banner" id="gaBanner">
+            <div class="ga-banner-title">Google Analytics 4</div>
+            <p class="ga-banner-text">
+              Site traffic and events for the linked GA4 property (same OAuth as Ads).
+              Use this to spot inflated conversions, weak landings, and Ads↔GA links.
+              Period follows the top-bar <b>Period</b> control.
+            </p>
+          </div>
+          <div class="ga-toolbar">
+            <p class="panel-note" id="gaNote">Open this tab to load GA4 data.</p>
+            <button type="button" class="btn btn-primary" id="gaReloadBtn">
+              <span class="material-symbols-outlined">refresh</span>
+              Reload GA4
+            </button>
+          </div>
+          <div class="kpi-grid" id="gaKpis"></div>
+          <div class="split">
+            <div class="panel">
+              <div class="panel-head">
+                <h2>Channels</h2>
+                <span class="chip" id="gaChannelsChip">—</span>
+              </div>
+              <div class="table-wrap" id="gaChannels"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-head">
+                <h2>Landing pages</h2>
+                <span class="chip" id="gaLandingsChip">—</span>
+              </div>
+              <div class="table-wrap" id="gaLandings"></div>
+            </div>
+          </div>
+          <div class="split">
+            <div class="panel">
+              <div class="panel-head">
+                <h2>Events</h2>
+                <span class="chip" id="gaEventsChip">—</span>
+              </div>
+              <div class="table-wrap" id="gaEvents"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-head">
+                <h2>GA4 key events</h2>
+                <span class="chip" id="gaConvChip">—</span>
+              </div>
+              <div class="table-wrap" id="gaConvEvents"></div>
+            </div>
+          </div>
+          <div class="split">
+            <div class="panel">
+              <div class="panel-head"><h2>Google Ads links</h2></div>
+              <div class="table-wrap" id="gaLinks"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><h2>Ads conversion actions</h2></div>
+              <div class="table-wrap" id="gaAdsGoals"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section id="view-gaql" class="view">
+        <div class="panel gaql-panel">
+          <div class="gaql-banner">
+            <div class="gaql-banner-title">GAQL — Google Ads Query Language</div>
+            <p class="gaql-banner-text">
+              Run <b>read-only</b> SELECT queries against the current account
+              (same idea as MCP <code>run_gaql</code>). Mutations (pause, bids, RSA)
+              are <b>not</b> done here — use AI Assistant / Optimize.
+            </p>
+            <ul class="gaql-hints">
+              <li><b>FROM</b> resource: <code>campaign</code>, <code>keyword_view</code>, <code>search_term_view</code>, <code>ad_group_ad</code>…</li>
+              <li><b>metrics.*</b> usually need a date range: <code>segments.date DURING LAST_7_DAYS</code> (or LAST_30_DAYS).</li>
+              <li>Money fields are <b>micros</b> (<code>cost_micros / 1_000_000</code> = account currency).</li>
+              <li>Errors often mean incompatible fields in one SELECT (e.g. budget + keyword_view).</li>
+            </ul>
+            <p class="gaql-banner-meta">
+              Docs:
+              <a href="https://developers.google.com/google-ads/api/docs/query/overview" target="_blank" rel="noopener">Query overview</a>
+              ·
+              <a href="https://developers.google.com/google-ads/api/fields/v25/overview" target="_blank" rel="noopener">Field reference</a>
+            </p>
+          </div>
+
+          <div class="gaql-presets" id="gaqlPresets" aria-label="Example queries"></div>
+
+          <div class="panel-head">
+            <h2>Query</h2>
+            <span class="chip" id="gaqlStatusChip">ready</span>
+          </div>
+          <textarea id="gaqlQuery" spellcheck="false" aria-label="GAQL query"></textarea>
+          <div class="gaql-actions">
+            <button class="btn btn-primary" id="runGaqlBtn" type="button">
+              <span class="material-symbols-outlined">play_arrow</span>
+              Run
+            </button>
+            <button class="btn btn-ghost" id="gaqlFormatBtn" type="button" title="Collapse extra blank lines">
+              Tidy
+            </button>
+            <button class="btn btn-ghost" id="gaqlCopyBtn" type="button">Copy query</button>
+            <span class="muted" id="gaqlHint">Ctrl+Enter to run</span>
+          </div>
+
+          <div class="panel-head gaql-result-head">
+            <h2>Result</h2>
+            <div class="gaql-view-toggle">
+              <button type="button" class="btn btn-ghost active" id="gaqlViewTable" data-view="table">Table</button>
+              <button type="button" class="btn btn-ghost" id="gaqlViewJson" data-view="json">JSON</button>
+            </div>
+          </div>
+          <p class="muted" id="gaqlMeta">Click Run or pick a preset.</p>
+          <div class="table-wrap gaql-table-wrap" id="gaqlTableWrap" hidden>
+            <div id="gaqlTable"></div>
+          </div>
+          <pre id="gaqlResult" class="code-block" hidden>Results will appear here.</pre>
+        </div>
+      </section>
+      <section id="view-setup" class="view">
+        <div class="panel creds-setup">
+          <div class="creds-status" id="credsStatus">Checking credentials…</div>
+          <p class="muted">One <code>.env</code> file. YAML is optional. Google still needs a developer token, a Desktop OAuth client, and a one-time sign-in.</p>
+          <div class="creds-guide" id="credsGuide"></div>
+          <form id="credsForm" class="wizard-form creds-form">
+            <div class="wizard-grid">
+              <label class="wide">Developer token
+                <input name="developer_token" autocomplete="off" placeholder="from Ads → API Center" />
+              </label>
+              <label class="wide">OAuth Client ID
+                <input name="client_id" autocomplete="off" placeholder="….apps.googleusercontent.com" />
+              </label>
+              <label class="wide">OAuth Client secret
+                <input name="client_secret" type="password" autocomplete="off" placeholder="Desktop client secret" />
+              </label>
+              <label>Customer ID
+                <input name="customer_id" inputmode="numeric" placeholder="10 digits, blank = first account" />
+              </label>
+              <label>MCC login customer ID
+                <input name="login_customer_id" inputmode="numeric" placeholder="only if you sign in via MCC" />
+              </label>
+              <label class="wide">OpenRouter API key (AI Assistant)
+                <input name="openrouter_api_key" type="password" autocomplete="off" placeholder="optional" />
+              </label>
+              <label>GA4 property ID
+                <input name="ga4_property_id" placeholder="digits only" />
+              </label>
+              <label class="checkbox-row">
+                <input type="checkbox" id="credsAnalytics" />
+                <span>Also request Analytics scopes on sign-in</span>
+              </label>
+            </div>
+            <div class="wizard-actions">
+              <button type="submit" class="btn btn-primary" id="credsSaveBtn">Save to .env</button>
+              <button type="button" class="btn" id="credsOAuthBtn">Sign in with Google</button>
+            </div>
+            <p class="panel-note" id="credsMsg"></p>
+            <div id="credsAccounts"></div>
+          </form>
+        </div>
+      </section>
+      <section id="view-playbook" class="view">
+        <div class="panel setup-panel">
+          <div class="setup-banner" id="setupBanner"></div>
+          <div class="setup-toolbar">
+            <div class="setup-progress" id="setupProgress"></div>
+            <label class="field compact">
+              <span class="sr-only">Filter</span>
+              <select id="setupFilter">
+                <option value="all" selected>All</option>
+                <option value="open">Open</option>
+                <option value="done">Done</option>
+              </select>
+            </label>
+            <button type="button" class="btn btn-ghost" id="setupResetDone" title="Clear done marks">
+              Reset done
+            </button>
+          </div>
+          <div class="setup-list" id="setupList"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <button type="button" class="chat-fab" id="chatFab" title="Open AI Assistant" aria-label="Open AI Assistant" aria-expanded="false">
+    <span class="material-symbols-outlined" id="chatFabIcon">smart_toy</span>
+  </button>
+
+  <aside class="chat-dock" id="chatDock" hidden aria-label="AI Assistant">
+    <div class="chat-dock-head">
+      <div>
+        <strong>AI Assistant</strong>
+        <div class="chat-dock-sub" id="dockChatStatus">Ready</div>
+      </div>
+      <div class="chat-dock-head-actions">
+        <button type="button" class="btn btn-ghost" id="dockOpenFullBtn" title="Open full AI Assistant">
+          <span class="material-symbols-outlined">open_in_full</span>
+        </button>
+        <button type="button" class="btn btn-ghost" id="dockCloseBtn" title="Close">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+    </div>
+    <div class="chat-dock-log" id="dockChatLog" aria-live="polite"></div>
+    <form class="chat-dock-composer" id="dockChatForm">
+      <div class="composer-box">
+        <div class="composer-attach-preview" id="dockAttachPreview" hidden></div>
+        <textarea id="dockChatInput" rows="2" placeholder="Write a message..."></textarea>
+        <div class="composer-toolbar">
+          <div class="composer-toolbar-left">
+            <input
+              type="file"
+              id="dockFileInput"
+              class="sr-only"
+              multiple
+              accept="image/jpeg,image/png,image/gif,image/webp,.txt,.md,.csv,.json,.log,.tsv"
+            />
+            <button
+              class="composer-icon-btn"
+              type="button"
+              id="dockAttachBtn"
+              title="Attach image or file"
+              aria-label="Attach image or file"
+            >
+              <span class="material-symbols-outlined">add</span>
+            </button>
+          </div>
+          <div class="composer-toolbar-right">
+            <label class="composer-model" title="Model">
+              <select id="dockModelSelect" data-model-select aria-label="Model"></select>
+              <span class="material-symbols-outlined composer-model-chevron" aria-hidden="true">expand_more</span>
+            </label>
+            <button
+              class="composer-icon-btn"
+              type="button"
+              id="dockVoiceBtn"
+              data-voice-btn
+              data-voice-input="dockChatInput"
+              title="Voice input"
+              aria-label="Voice input"
+              aria-pressed="false"
+            >
+              <span class="material-symbols-outlined" data-voice-icon>mic</span>
+            </button>
+            <button class="composer-send-btn" type="submit" id="dockChatSend" title="Send" aria-label="Send">
+              <span class="material-symbols-outlined">arrow_upward</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </aside>
+</body>
+</html>

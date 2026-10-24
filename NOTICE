@@ -1,0 +1,17 @@
+Third-party materials
+=====================
+
+`.cursor/skills/google-ads-api-quickstart` and
+`.cursor/skills/google-ads-api-mcp-setup` are copies of Google's official
+Google Ads API agent skills (metadata.author: google-ads-api-team).
+
+They are included so Cursor can walk through credentials and the official
+read-only MCP. For the upstream MCP server see:
+
+  https://github.com/googleads/google-ads-mcp
+
+Project-specific wiring is in `.cursor/skills/google-ads-optimizer-stack`.
+Writes to Google Ads go through this app (AI Assistant / `/api/mutate`),
+not through the official MCP.
+
+Other dependencies are listed in `pyproject.toml` and keep their own licenses.

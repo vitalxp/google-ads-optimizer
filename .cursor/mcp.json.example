@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "google-ads-mcp": {
+      "type": "stdio",
+      "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "args": [
+        "${workspaceFolder}/scripts/run_google_ads_mcp.py"
+      ],
+        "env": {
+        "PYTHONUNBUFFERED": "1"
+      }
+    }
+  }
+}

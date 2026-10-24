@@ -1,0 +1,52 @@
+---
+description: RSA Ad Strength — action_items, keyword density, semantic diversity (no synonym stacking)
+alwaysApply: true
+---
+
+# RSA → Good / Excellent
+
+Follow `src/ads_optimizer/knowledge/rsa-ad-strength.md`.
+
+## Always read Google recommendations first
+
+For any Average / Poor / Incomplete ad (or “improve Ad Strength”):
+
+1. Read **`action_items`** from `get_ad_strength` / `get_creatives`.
+2. Do **not** ignore a tip because it repeats on every ad.
+3. Map tips to tools:
+
+| Google tip | Action |
+|---|---|
+| Add N more **sitelinks** | `get_campaign_assets` → `add_sitelinks` until **≥6** (prefer **≥8–9**) ENABLED on the campaign; themed copy per campaign (`sitelink-diversity`) — same URLs OK |
+| More keywords in H/D | `get_keywords` → rewrite with density **and** semantic diversity |
+| More unique assets | Fill **15 H / 4 D** with **different meaning categories** |
+
+If ads already have 15 H + 4 D and Google only says “Add 3 more sitelinks”, **add sitelinks** — do not only rewrite headlines.
+
+## Semantic diversity (route / city RSAs)
+
+**Forbidden:** 10–12 headlines that only swap synonyms  
+(`Transfer` / `Transport` / `Przewóz` / `Taxi` / `Kierowca` + same cities).
+
+**Required:** ≥6 meaning categories across 15 H (route/KW, USP, feature, price/guarantee, trust, CTA, geo, convenience).
+
+**Balanced pool (default for Miasta / Kurorty / Lotnisko / International):**
+
+- **4–5** route-specific headlines (KW / cities / direction)
+- **~10–12** reusable universal headlines — ready lists in `rsa-route-headline-pools` (PL/EN)
+- Cap synonym+route lines at **≤4**
+- No Unicode arrows (`→`) in H; final URL must be HTTP 200
+
+Unique strings are not enough — Google scores **meaning** diversity.
+
+## Keyword density (when rewriting RSA)
+
+| Rule | Target |
+|---|---|
+| Primary KW in headlines | ≥4 (max 6) |
+| Any ad-group KW in headlines | ≥50% |
+| Whole KW in one field | Never split across two headlines |
+| Descriptions with primary KW | ≥2 of 4 |
+| Pins | Almost none |
+
+Ad Strength may stay **PENDING** after edits. Cite `rsa-ad-strength`.
